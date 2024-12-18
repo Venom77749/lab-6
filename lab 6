@@ -1,0 +1,242 @@
+#include <iostream>
+#include <list>
+#include <unordered_set>
+#include <unordered_map>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <algorithm>
+#include <cctype>
+#include <climits>
+using namespace std;
+
+// Задание 1: Однонаправленный список
+class SingleLinkedList {
+private:
+    list<int> lst;
+
+public:
+    void add(int value) {
+        lst.push_back(value);
+    }
+
+    void insertAfter(int E) {
+        auto it = find(lst.begin(), lst.end(), E);
+        if (it != lst.end()) {
+            list<int> temp(lst);
+            lst.insert(next(it), temp.begin(), temp.end());
+        }
+    }
+
+    void print() const {
+        for (int val : lst) {
+            cout << val << " ";
+        }
+        cout << endl;
+    }
+};
+
+// Задание 2: Двунаправленный список
+class DoubleLinkedList {
+private:
+    list<int> lst;
+
+public:
+    void add(int value) {
+        lst.push_back(value);
+    }
+
+    void addAtBothEnds(int E) {
+        lst.push_front(E);
+        lst.push_back(E);
+    }
+
+    void print() const {
+        for (int val : lst) {
+            cout << val << " ";
+        }
+        cout << endl;
+    }
+};
+
+// Задания 3 и 4: Уникальный список
+class HashSet {
+private:
+    unordered_set<string> set;
+
+public:
+    void add(const string& value) {
+        set.insert(value);
+    }
+
+    void print() const {
+        for (const string& val : set) {
+            cout << val << " ";
+        }
+        cout << endl;
+    }
+
+    // Реализация Union, Except, Intersect, Contains
+    static HashSet Union(const HashSet& a, const HashSet& b) {
+        HashSet result;
+        result.set.insert(a.set.begin(), a.set.end());
+        result.set.insert(b.set.begin(), b.set.end());
+        return result;
+    }
+
+    static HashSet Intersect(const HashSet& a, const HashSet& b) {
+        HashSet result;
+        for (const string& val : a.set) {
+            if (b.set.count(val)) {
+                result.add(val);
+            }
+        }
+        return result;
+    }
+
+    static HashSet Except(const HashSet& a, const HashSet& b) {
+        HashSet result;
+        for (const string& val : a.set) {
+            if (!b.set.count(val)) {
+                result.add(val);
+            }
+        }
+        return result;
+    }
+
+    bool contains(const string& value) const {
+        return set.count(value) > 0;
+    }
+};
+
+// Задание 5: Словарь
+class Dictionary {
+private:
+    unordered_map<int, vector<int>> classScores;
+
+public:
+    void addResult(int grade, int score) {
+        classScores[grade].push_back(score);
+    }
+
+    void findWinners() {
+        int overallMinScore = INT_MAX;
+
+        for (auto& [grade, scores] : classScores) {
+            sort(scores.rbegin(), scores.rend());
+            int threshold = max(static_cast<size_t>(1), scores.size() / 4);
+
+            int minScore = scores[threshold - 1];
+            cout << "Минимальный балл в классе " << grade << ": " << minScore << endl;
+
+            if (minScore < overallMinScore) {
+                overallMinScore = minScore;
+            }
+        }
+
+        cout << "Общий минимальный балл: " << overallMinScore << endl;
+    }
+};
+
+// Главное меню
+int main() {
+    cout << "Выберите задание (1-5): ";
+    int task;
+    cin >> task;
+
+    switch (task) {
+        case 1: {
+            SingleLinkedList list;
+            cout << "Введите элементы списка (0 для завершения): ";
+            int value;
+            while (cin >> value && value != 0) {
+                list.add(value);
+            }
+
+            cout << "Введите значение E для вставки копии списка после E: ";
+            int E;
+            cin >> E;
+
+            list.insertAfter(E);
+            cout << "Результат: ";
+            list.print();
+            break;
+        }
+        case 2: {
+            DoubleLinkedList list;
+            cout << "Введите элементы списка (0 для завершения): ";
+            int value;
+            while (cin >> value && value != 0) {
+                list.add(value);
+            }
+
+            cout << "Введите значение E для добавления в начало и конец списка: ";
+            int E;
+            cin >> E;
+
+            list.addAtBothEnds(E);
+            cout << "Результат: ";
+            list.print();
+            break;
+        }
+        case 3: {
+            HashSet setA, setB;
+            cout << "Введите элементы первого множества (\"stop\" для завершения): ";
+            string value;
+            while (cin >> value && value != "stop") {
+                setA.add(value);
+            }
+
+            cout << "Введите элементы второго множества (\"stop\" для завершения): ";
+            while (cin >> value && value != "stop") {
+                setB.add(value);
+            }
+
+            cout << "Объединение: ";
+            HashSet::Union(setA, setB).print();
+
+            cout << "Пересечение: ";
+            HashSet::Intersect(setA, setB).print();
+
+            cout << "Разность: ";
+            HashSet::Except(setA, setB).print();
+            break;
+        }
+        case 4: {
+            HashSet set;
+            cout << "Введите символы первого слова: ";
+            string firstWord;
+            cin >> firstWord;
+
+            cout << "Введите остальные слова (\"stop\" для завершения): ";
+            string word;
+            while (cin >> word && word != "stop") {
+                for (char ch : word) {
+                    if (firstWord.find(ch) == string::npos) {
+                        set.add(string(1, ch));
+                    }
+                }
+            }
+
+            cout << "Символы, отсутствующие в первом слове, но присутствующие в остальных: ";
+            set.print();
+            break;
+        }
+        case 5: {
+            Dictionary dict;
+            cout << "Введите данные участников (формат: <класс> <баллы>, 0 для завершения): ";
+            int grade, score;
+            while (cin >> grade && grade != 0) {
+                cin >> score;
+                dict.addResult(grade, score);
+            }
+
+            dict.findWinners();
+            break;
+        }
+        default:
+            cout << "Некорректный выбор!" << endl;
+    }
+
+    return 0;
+}
